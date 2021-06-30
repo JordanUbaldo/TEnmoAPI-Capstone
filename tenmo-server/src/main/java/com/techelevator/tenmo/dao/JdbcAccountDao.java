@@ -6,7 +6,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 import java.math.BigDecimal;
 
-public class JdbcAccountDao implements  AccountDao{
+public class JdbcAccountDao implements AccountDao{
 
     private JdbcTemplate jdbcTemplate;
 
@@ -29,10 +29,20 @@ public class JdbcAccountDao implements  AccountDao{
         SqlRowSet resultsFrom = jdbcTemplate.queryForRowSet(sqlFrom, from);
         BigDecimal fromBalance = resultsFrom.getBigDecimal("balance");
 
-        String sqlTo = "SELECT * FROM accounts WHERE account_id = ?";
-        SqlRowSet resultsTo = jdbcTemplate.queryForRowSet(sqlTo, to);
+        if (fromBalance.compareTo(amountToTransfer) >= 0) {
+            BigDecimal fromBalanceAfterTransfer = fromBalance.subtract(amountToTransfer);
+            String sqlFromUpdate = "UPDATE accounts SET balance = ? WHERE id = ?;";
+            SqlRowSet resultsFromUpdate = jdbcTemplate.queryForRowSet(sqlFromUpdate, fromBalanceAfterTransfer, from);
 
-
+            String sqlTo = "SELECT * FROM accounts WHERE account_id = ?";
+            SqlRowSet resultsTo = jdbcTemplate.queryForRowSet(sqlTo, to);
+            BigDecimal toBalance = resultsFrom.getBigDecimal("balance");
+            BigDecimal toBalanceAfterTransfer = toBalance.add(amountToTransfer);
+            String sqlToUpdate = "UPDATE accounts SET balance = ? WHERE id = ?;";
+            SqlRowSet resultsToUpdate = jdbcTemplate.queryForRowSet(sqlToUpdate, toBalanceAfterTransfer, to);
+        } else {
+            System.out.println("Transfer cannot be performed.");
+        }
     }
 
     private Account mapRowToAccount(SqlRowSet rs) {

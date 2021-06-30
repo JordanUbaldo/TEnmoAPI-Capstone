@@ -9,6 +9,6 @@ public interface AccountDao {
 
     BigDecimal getBalance(int id);
 
-    public void transfer(BigDecimal amountToTransfer, Account from, Account to);
+    public void transfer(BigDecimal amountToTransfer, int from, int to);
 
 }

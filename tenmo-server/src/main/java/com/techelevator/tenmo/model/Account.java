@@ -2,7 +2,7 @@ package com.techelevator.tenmo.model;
 
 import java.math.BigDecimal;
 
-public class Account {
+public class Account extends Transfer {
 
     private int accountId;
     private int userId;

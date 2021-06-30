@@ -1,5 +1,6 @@
 package com.techelevator.tenmo.dao;
 
+import com.techelevator.tenmo.exceptions.AccountNotFoundException;
 import com.techelevator.tenmo.model.Account;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -15,34 +16,37 @@ public class JdbcAccountDao implements AccountDao{
     }
 
     @Override
-    public BigDecimal getBalance(int id) {
-        String sql = "SELECT * FROM accounts WHERE account_id = ?;";
-
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id);
-        Account account = mapRowToAccount(results);
-        return account.getBalance();
+    public Account getAccount(int accountId, int userId) {
+        Account account = null;
+        String sql = "SELECT * FROM accounts WHERE account_id = ? AND user_id = ?;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, accountId, userId);
+        if (results.next()) {
+            account = mapRowToAccount(results);
+        } else {
+            throw new AccountNotFoundException();
+        }
+        return account;
     }
 
     @Override
-    public void transfer(BigDecimal amountToTransfer, int from, int to) {
-        String sqlFrom ="SELECT balance FROM accounts WHERE account_id = ?";
-        SqlRowSet resultsFrom = jdbcTemplate.queryForRowSet(sqlFrom, from);
-        BigDecimal fromBalance = resultsFrom.getBigDecimal("balance");
+    public void transfer(BigDecimal amountToTransfer, int from, int to, int fromUserId, int toUserId) {
+        subtractToBalance(amountToTransfer, from, fromUserId);
+        addToBalance(amountToTransfer, to, toUserId);
+    }
 
-        if (fromBalance.compareTo(amountToTransfer) >= 0) {
-            BigDecimal fromBalanceAfterTransfer = fromBalance.subtract(amountToTransfer);
-            String sqlFromUpdate = "UPDATE accounts SET balance = ? WHERE id = ?;";
-            SqlRowSet resultsFromUpdate = jdbcTemplate.queryForRowSet(sqlFromUpdate, fromBalanceAfterTransfer, from);
+    @Override
+    public void addToBalance(BigDecimal amountToAdd, int to, int userId) {
+        BigDecimal updatedBalance = getAccount(to, userId).getBalance().add(amountToAdd);
+        String sql = "UPDATE accounts SET balance = ? WHERE id = ? AND user_id = ?;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, updatedBalance, to, userId);
 
-            String sqlTo = "SELECT * FROM accounts WHERE account_id = ?";
-            SqlRowSet resultsTo = jdbcTemplate.queryForRowSet(sqlTo, to);
-            BigDecimal toBalance = resultsFrom.getBigDecimal("balance");
-            BigDecimal toBalanceAfterTransfer = toBalance.add(amountToTransfer);
-            String sqlToUpdate = "UPDATE accounts SET balance = ? WHERE id = ?;";
-            SqlRowSet resultsToUpdate = jdbcTemplate.queryForRowSet(sqlToUpdate, toBalanceAfterTransfer, to);
-        } else {
-            System.out.println("Transfer cannot be performed.");
-        }
+    }
+
+    @Override
+    public void subtractToBalance(BigDecimal amountToSubtract, int from, int userId) {
+        BigDecimal updatedBalance = getAccount(from, userId).getBalance().add(amountToSubtract);
+        String sql = "UPDATE accounts SET balance = ? WHERE id = ? AND user_id = ?;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, updatedBalance, from, userId);
     }
 
     private Account mapRowToAccount(SqlRowSet rs) {

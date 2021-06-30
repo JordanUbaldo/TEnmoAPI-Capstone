@@ -31,12 +31,4 @@ public class Account extends Transfer {
     public void setBalance(BigDecimal balance) {
         this.balance = balance;
     }
-
-    public void transfer(BigDecimal amountToTransfer, Account from, Account to) {
-        BigDecimal fromBalance = from.getBalance().subtract(amountToTransfer);
-        from.setBalance(fromBalance);
-
-        BigDecimal toBalance = to.getBalance().add(amountToTransfer);
-        to.setBalance(toBalance);
-    }
 }

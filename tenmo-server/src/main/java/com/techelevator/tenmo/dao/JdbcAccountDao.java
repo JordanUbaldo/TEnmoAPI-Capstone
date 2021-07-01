@@ -4,9 +4,11 @@ import com.techelevator.tenmo.exceptions.AccountNotFoundException;
 import com.techelevator.tenmo.model.Account;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
+@Component
 public class JdbcAccountDao implements AccountDao{
 
     private JdbcTemplate jdbcTemplate;
@@ -21,7 +23,7 @@ public class JdbcAccountDao implements AccountDao{
         String sql = "SELECT * FROM accounts WHERE account_id = ? AND user_id = ?;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql, accountId, userId);
         if (results.next()) {
-            account = mapRowToAccount(results);
+           account = mapRowToAccount(results);
         } else {
             throw new AccountNotFoundException();
         }

@@ -16,30 +16,19 @@ import java.security.Principal;
 public class AccountController {
 
     private AccountDao accountDao;
-    //private TransferDao transferDao;
+    private TransferDao transferDao;
     private UserDao userDao;
 
     public AccountController(AccountDao accountDao, UserDao userDao) {
         this.accountDao = accountDao;
-        //this.transferDao = transferDao;
         this.userDao = userDao;
     }
 
-    @RequestMapping(path = "/{accountId}/balance", method =  RequestMethod.GET)
-    public BigDecimal balance(@PathVariable @RequestBody int accountId, Principal user) throws AccountNotFoundException {
+    @RequestMapping(path = "/balance", method =  RequestMethod.GET)
+    public BigDecimal balance(Principal user) throws AccountNotFoundException {
         String userName = user.getName();
         int userId = userDao.findIdByUsername(userName);
-        return accountDao.getAccount(accountId, userId).getBalance();
+        return accountDao.getAccount(userId).getBalance();
     }
-
-    // Work on this method next! Need to complete transfer dao set up before hand.
-//    @RequestMapping(path = "/{accountId}/transfer", method = RequestMethod.PUT)
-//    public void transfer(@PathVariable int accountId, Principal fromUser) throws AccountNotFoundException {
-//        String userName = fromUser.getName();
-//        int userId = userDao.findIdByUsername(userName);
-//
-//        transfer();
-//    }
-
 
 }

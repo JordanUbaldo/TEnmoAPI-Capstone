@@ -6,14 +6,14 @@ public class Transfer {
 
     private int transferId;
     private int typeId;
+    private String typeDesc = "Send";
     private int statusId;
-
-    // Maybe change from and to to account data type?
-    private int from;
+    private String statusDesc = "Approve";
     private int to;
+    private int from;
     private BigDecimal amount;
 
-    public long getTransferId() {
+    public int getTransferId() {
         return transferId;
     }
 
@@ -21,7 +21,7 @@ public class Transfer {
         this.transferId = transferId;
     }
 
-    public long getTypeId() {
+    public int getTypeId() {
         return typeId;
     }
 
@@ -29,7 +29,7 @@ public class Transfer {
         this.typeId = typeId;
     }
 
-    public long getStatusId() {
+    public int getStatusId() {
         return statusId;
     }
 

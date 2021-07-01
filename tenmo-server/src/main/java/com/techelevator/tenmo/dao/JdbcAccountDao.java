@@ -18,10 +18,10 @@ public class JdbcAccountDao implements AccountDao{
     }
 
     @Override
-    public Account getAccount(int accountId, int userId) {
+    public Account getAccount(int userId) {
         Account account = null;
-        String sql = "SELECT * FROM accounts WHERE account_id = ? AND user_id = ?;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, accountId, userId);
+        String sql = "SELECT * FROM accounts WHERE user_id = ?;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
         if (results.next()) {
            account = mapRowToAccount(results);
         } else {
@@ -31,24 +31,18 @@ public class JdbcAccountDao implements AccountDao{
     }
 
     @Override
-    public void transfer(BigDecimal amountToTransfer, int from, int to, int fromUserId, int toUserId) {
-        subtractToBalance(amountToTransfer, from, fromUserId);
-        addToBalance(amountToTransfer, to, toUserId);
-    }
-
-    @Override
-    public void addToBalance(BigDecimal amountToAdd, int to, int userId) {
-        BigDecimal updatedBalance = getAccount(to, userId).getBalance().add(amountToAdd);
-        String sql = "UPDATE accounts SET balance = ? WHERE id = ? AND user_id = ?;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, updatedBalance, to, userId);
+    public void addToBalance(BigDecimal amountToAdd, int to) {
+        BigDecimal updatedBalance = getAccount(to).getBalance().add(amountToAdd);
+        String sql = "UPDATE accounts SET balance = ? WHERE user_id = ?;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, updatedBalance, to);
 
     }
 
     @Override
-    public void subtractToBalance(BigDecimal amountToSubtract, int from, int userId) {
-        BigDecimal updatedBalance = getAccount(from, userId).getBalance().add(amountToSubtract);
-        String sql = "UPDATE accounts SET balance = ? WHERE id = ? AND user_id = ?;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, updatedBalance, from, userId);
+    public void subtractToBalance(BigDecimal amountToSubtract, int from) {
+        BigDecimal updatedBalance = getAccount(from).getBalance().subtract(amountToSubtract);
+        String sql = "UPDATE accounts SET balance = ? WHERE user_id = ?;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, updatedBalance, from);
     }
 
     private Account mapRowToAccount(SqlRowSet rs) {

@@ -8,7 +8,7 @@ public class Account extends Transfer {
     private int userId;
     private BigDecimal balance;
 
-    public long getAccountId() {
+    public int getAccountId() {
         return accountId;
     }
 
@@ -16,7 +16,7 @@ public class Account extends Transfer {
         this.accountId = accountId;
     }
 
-    public long getUserId() {
+    public int getUserId() {
         return userId;
     }
 

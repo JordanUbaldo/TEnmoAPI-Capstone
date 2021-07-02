@@ -30,7 +30,7 @@ public class TransferController {
     }
 
     @RequestMapping(path = "", method = RequestMethod.POST)
-    public Transfer transfer(@RequestBody int toUserId, @RequestBody BigDecimal amount, Principal user) throws AccountNotFoundException {
+    public Transfer transfer(@RequestBody int toUserId, BigDecimal amount, Principal user) throws AccountNotFoundException {
         String fromUser= user.getName();
         int fromUserId = userDao.findIdByUsername(fromUser);
 

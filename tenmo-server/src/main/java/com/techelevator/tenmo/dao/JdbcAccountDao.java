@@ -34,7 +34,7 @@ public class JdbcAccountDao implements AccountDao{
     public void addToBalance(BigDecimal amountToAdd, int to) {
         BigDecimal updatedBalance = getAccount(to).getBalance().add(amountToAdd);
         String sql = "UPDATE accounts SET balance = ? WHERE user_id = ?;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, updatedBalance, to);
+        jdbcTemplate.queryForRowSet(sql, updatedBalance, to);
 
     }
 
@@ -42,7 +42,7 @@ public class JdbcAccountDao implements AccountDao{
     public void subtractToBalance(BigDecimal amountToSubtract, int from) {
         BigDecimal updatedBalance = getAccount(from).getBalance().subtract(amountToSubtract);
         String sql = "UPDATE accounts SET balance = ? WHERE user_id = ?;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, updatedBalance, from);
+        jdbcTemplate.queryForRowSet(sql, updatedBalance, from);
     }
 
     private Account mapRowToAccount(SqlRowSet rs) {

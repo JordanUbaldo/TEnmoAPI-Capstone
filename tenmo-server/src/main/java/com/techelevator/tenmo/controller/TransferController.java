@@ -3,16 +3,17 @@ package com.techelevator.tenmo.controller;
 import com.techelevator.tenmo.dao.AccountDao;
 import com.techelevator.tenmo.dao.TransferDao;
 import com.techelevator.tenmo.dao.UserDao;
+import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.Transfer;
+import com.techelevator.tenmo.model.User;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.math.BigDecimal;
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @PreAuthorize("isAuthenticated()")
@@ -29,15 +30,24 @@ public class TransferController {
         this.transferDao = transferDao;
     }
 
-    @RequestMapping(path = "", method = RequestMethod.POST)
-    public Transfer transfer(@RequestBody int toUserId, BigDecimal amount, Principal user) throws AccountNotFoundException {
-        String fromUser= user.getName();
-        int fromUserId = userDao.findIdByUsername(fromUser);
 
-        transferDao.transfer(amount, fromUserId, toUserId);
-        Transfer transfer = transferDao.getTransfer(amount, fromUserId, toUserId);
+    @ResponseStatus(HttpStatus.CREATED)
+    @RequestMapping(path = "", method = RequestMethod.POST)
+    public Transfer transfer(@RequestBody Transfer transfer) {
+
+        transferDao.transfer(transfer);
         transferDao.setTransfer(transfer);
 
         return transfer;
+    }
+
+    @RequestMapping(path = "/account", method = RequestMethod.GET)
+    public Transfer[] list(Principal user) {
+         int userId = userDao.findIdByUsername(user.getName());
+        Account account = transferDao.getAccountByUserId(userId);
+        List<Transfer> transferList = transferDao.list(account);
+        Transfer[] transferArray = new Transfer[transferList.size()];
+        transferArray = transferList.toArray(transferArray);
+        return transferArray;
     }
 }

@@ -1,10 +1,9 @@
 package com.techelevator.tenmo;
 
 import com.techelevator.tenmo.model.AuthenticatedUser;
+import com.techelevator.tenmo.model.Transfer;
 import com.techelevator.tenmo.model.UserCredentials;
-import com.techelevator.tenmo.services.AccountService;
-import com.techelevator.tenmo.services.AuthenticationService;
-import com.techelevator.tenmo.services.AuthenticationServiceException;
+import com.techelevator.tenmo.services.*;
 import com.techelevator.view.ConsoleService;
 
 import javax.security.auth.login.AccountNotFoundException;
@@ -30,16 +29,20 @@ private static final String API_BASE_URL = "http://localhost:8080/";
     private ConsoleService console;
     private AuthenticationService authenticationService;
     private AccountService accountService;
+    private UserService userService;
+    private TransferService transferService;
 
     public static void main(String[] args) {
-    	App app = new App(new ConsoleService(System.in, System.out), new AuthenticationService(API_BASE_URL), new AccountService(API_BASE_URL));
+    	App app = new App(new ConsoleService(System.in, System.out), new AuthenticationService(API_BASE_URL), new AccountService(API_BASE_URL), new UserService(API_BASE_URL), new TransferService(API_BASE_URL));
     	app.run();
     }
 
-    public App(ConsoleService console, AuthenticationService authenticationService, AccountService accountService) {
+    public App(ConsoleService console, AuthenticationService authenticationService, AccountService accountService, UserService userService, TransferService transferService) {
 		this.console = console;
 		this.authenticationService = authenticationService;
 		this.accountService = accountService;
+		this.userService = userService;
+		this.transferService = transferService;
 	}
 
 	public void run() {
@@ -74,13 +77,14 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	}
 
 	private void viewCurrentBalance() {
-		System.out.println(accountService.balance(currentUser.getToken()));
+		System.out.println("Current Balance:");
+		System.out.println("$" + accountService.balance(currentUser) + " TEBUCKS");
+
 	}
 
 	private void viewTransferHistory() {
 		// TODO Auto-generated method stub
-		// Using to generate token for testing.
-		System.out.println(currentUser.getToken());
+		transferService.getTransfers(currentUser);
 		
 	}
 
@@ -91,6 +95,13 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 
 	private void sendBucks() {
 		// TODO Auto-generated method stub
+		System.out.println("Users");
+		System.out.println("ID\t\t Name");
+		userService.getUsers(currentUser);
+		transferService.transfer(currentUser);
+
+
+
 		
 	}
 

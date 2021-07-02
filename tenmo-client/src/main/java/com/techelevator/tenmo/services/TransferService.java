@@ -55,7 +55,7 @@ public class TransferService {
                 makeAuthEntity(authUser.getToken()), Transfer[].class).getBody();
 
         for (int i = 0; i< transfers.length; i++) {
-            System.out.println(transfers[i].getTransferId() + "From: " + transfers[i].getFromUserName() + ", To: " + transfers[i].getToUserName() + " Amount: $" + transfers[i].getAmount());
+            System.out.println(transfers[i].getTransferId() + " From: " + transfers[i].getFromUserName() + ", To: " + transfers[i].getToUserName() + " Amount: $" + transfers[i].getAmount());
 
             //23          From: Bernice          $ 903.14
         }

@@ -29,18 +29,32 @@ public class JdbcTransferDao implements TransferDao {
         Transfer transfer = mapRowToTransfer(results);
         return transfer;
     }
-
+// Doesn't work
     @Override
     public List<Transfer> list(Account account) {
         List<Transfer> transfers = new ArrayList<>();
-        String sql = "SELECT * FROM transfers WHERE account_from = ? OR account_to = ?;";
-        int userAccount = account.getAccountId();
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userAccount, userAccount);
+        Transfer transfer = new Transfer();
+        String sql = "SELECT *, username AS from_username " +
+                "FROM transfers t " +
+                "JOIN accounts a1 ON t.account_from = a1.account_id " +
+                "JOIN users u USING(user_id) " +
+                "WHERE account_from = ? OR account_to = ?;";
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, account.getAccountId(), account.getAccountId());
         while (results.next()) {
-            Transfer transfer = mapRowToTransfer(results);
-            transfer.setToUserName(getAccountByUserId(transfer.getToUserId()).getToUserName());
-            transfer.setFromUserName(getAccountByUserId(transfer.getFromUserId()).getFromUserName());
+            transfer = mapRowToTransfer(results);
             transfers.add(transfer);
+
+        }
+        String sql2 = "SELECT username AS to_username " +
+                "FROM transfers t " +
+                "JOIN accounts a1 ON t.account_to = a1.account_id " +
+                "JOIN users u USING(user_id) " +
+                "WHERE account_from = ? OR account_to = ?;";
+        SqlRowSet results2 = jdbcTemplate.queryForRowSet(sql2, account.getAccountId(), account.getAccountId());
+        while (results2.next()) {
+            for (int i = 0; i < transfers.size(); i++) {
+                transfers.get(i).setToUserName(results2.getString("to_username"));
+            }
         }
         return transfers;
     }
@@ -54,10 +68,11 @@ public class JdbcTransferDao implements TransferDao {
         addToBalance(amountToTransfer, toUser);
         subtractToBalance(amountToTransfer, fromUser);
     }
+
     @Override
     public void setTransfer(Transfer transfer) {
         String sql = "INSERT INTO transfers (account_from, account_to, amount, transfer_type_id, transfer_status_id)" +
-                     "VALUES (? ,?, ?, ?, ?);";
+                "VALUES (? ,?, ?, ?, ?);";
         int from = getAccountByUserId(transfer.getFromUserId()).getAccountId();
         int to = getAccountByUserId(transfer.getToUserId()).getAccountId();
         int typeId = transfer.getTypeId();
@@ -120,6 +135,7 @@ public class JdbcTransferDao implements TransferDao {
         transfer.setToUserId(getAccountByAccountId(rs.getInt("account_from")).getToUserId());
         transfer.setFromUserId(getAccountByAccountId(rs.getInt("account_to")).getFromUserId());
         transfer.setAmount(rs.getBigDecimal("amount"));
+        transfer.setFromUserName(rs.getString("from_username"));
 
         return transfer;
     }

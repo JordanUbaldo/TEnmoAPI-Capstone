@@ -54,10 +54,29 @@ public class TransferService {
         transfers = restTemplate.exchange(BASE_URL + "transfer/account", HttpMethod.GET,
                 makeAuthEntity(authUser.getToken()), Transfer[].class).getBody();
 
-        for (int i = 0; i< transfers.length; i++) {
-            System.out.println(transfers[i].getTransferId() + " From: " + transfers[i].getFromUserName() + ", To: " + transfers[i].getToUserName() + " Amount: $" + transfers[i].getAmount());
+        System.out.println();
+        System.out.println("Transfers:");
+        for (int i = 0; i < transfers.length; i++) {
+            System.out.println("ID: " + transfers[i].getTransferId() + " From: " + transfers[i].getFromUserName() + ", To: " + transfers[i].getToUserName() + " Amount: $" + transfers[i].getAmount());
+        }
 
-            //23          From: Bernice          $ 903.14
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Please enter transfer ID to view details (0 to cancel):");
+        String transferIdString = scan.nextLine();
+        if (!transferIdString.equals("0")) {
+            int transferId = Integer.parseInt(transferIdString);
+            Transfer transfer = null;
+            transfer = restTemplate.exchange(BASE_URL + "transfer/" + transferId, HttpMethod.GET, makeAuthEntity(authUser.getToken()), Transfer.class).getBody();
+
+            System.out.println();
+            System.out.println("Transfer Details");
+            System.out.println();
+            System.out.println("Id: " + transfer.getTransferId());
+            System.out.println("From: " + transfer.getFromUserName());
+            System.out.println("To: " + transfer.getToUserName());
+            System.out.println("Type: " + transfer.getTypeDesc());
+            System.out.println("Status: " + transfer.getStatusDesc());
+            System.out.println("Amount: $" + transfer.getAmount());
         }
     }
 
@@ -70,7 +89,7 @@ public class TransferService {
             return entity;
         }
 
-        private HttpEntity makeAuthEntity(String token) {
+            private HttpEntity makeAuthEntity(String token) {
             HttpHeaders headers = new HttpHeaders();
             headers.setBearerAuth(token);
             HttpEntity entity = new HttpEntity<>(headers);

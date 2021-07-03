@@ -50,4 +50,10 @@ public class TransferController {
         transferArray = transferList.toArray(transferArray);
         return transferArray;
     }
+
+    @RequestMapping(path = "/{id}", method = RequestMethod.GET)
+    public Transfer getTransfer(@PathVariable int id) {
+        Transfer transfer = transferDao.getTransfer(id);
+        return transfer;
+    }
 }

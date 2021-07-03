@@ -7,6 +7,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
@@ -14,7 +15,6 @@ import java.util.Scanner;
 
 public class TransferService {
 
-        public static String AUTH_TOKEN = "";
         private final String BASE_URL;
         public RestTemplate restTemplate = new RestTemplate();
 
@@ -23,17 +23,40 @@ public class TransferService {
         }
 
         public void transfer(AuthenticatedUser user) {
+            User[] users = null;
+            try {
+                users = restTemplate.exchange(BASE_URL + "/user", HttpMethod.GET,
+                        makeAuthEntity(user), User[].class).getBody();
+
+                System.out.println("Users");
+                System.out.println("ID\t\t Name");
+                for (int i = 0; i < users.length; i++) {
+                    System.out.println(users[i].getId() + "\t" + users[i].getUsername());
+                }
+            } catch (RestClientException e) {
+                System.out.println("Unable to retrieve Users!");
+            }
+
             Scanner scan = new Scanner(System.in);
             System.out.println("\nEnter ID of user you are sending to (0 to cancel):");
             String toString = scan.nextLine();
             if (toString.equals("0")) {
                 System.out.println("\nTransfer Canceled");
             } else {
-                int to = Integer.parseInt(toString);
+                int to = 0;
+                try {
+                    to = Integer.parseInt(toString);
+                } catch (NumberFormatException e) {
+                    System.out.println("Error: Invalid Input");
+                }
                 System.out.println("\nEnter amount:");
                 String amountString = scan.nextLine();
-                BigDecimal amount = new BigDecimal(amountString);
-
+                BigDecimal amount = new BigDecimal(0);
+                try {
+                    amount = new BigDecimal(amountString);
+                } catch (NumberFormatException e) {
+                    System.out.println("Error: Invalid Input");
+                }
                 Transfer transfer = new Transfer();
                 transfer.setAmount(amount);
                 transfer.setToUserId(to);
@@ -43,21 +66,49 @@ public class TransferService {
                 transfer.setStatusId(2);
                 transfer.setTypeId(2);
 
-                restTemplate.exchange(BASE_URL + "/transfer", HttpMethod.POST,
-                        makeTransferEntity(user, transfer), Transfer.class).getBody();
-
+                try {
+                    restTemplate.exchange(BASE_URL + "/transfer", HttpMethod.POST,
+                            makeTransferEntity(user, transfer), Transfer.class).getBody();
+                } catch (Exception e) {
+                    System.out.println("Invalid User");
+                }
             }
         }
 
     public void getTransfers(AuthenticatedUser authUser) {
         Transfer[] transfers = null;
-        transfers = restTemplate.exchange(BASE_URL + "transfer/account", HttpMethod.GET,
-                makeAuthEntity(authUser.getToken()), Transfer[].class).getBody();
+        try {
+            transfers = restTemplate.exchange(BASE_URL + "transfer/account", HttpMethod.GET,
+                    makeAuthEntity(authUser), Transfer[].class).getBody();
 
-        for (int i = 0; i< transfers.length; i++) {
-            System.out.println(transfers[i].getTransferId() + "From: " + transfers[i].getFromUserName() + ", To: " + transfers[i].getToUserName() + " Amount: $" + transfers[i].getAmount());
+            System.out.println();
+            System.out.println("Transfers:");
+            for (int i = 0; i < transfers.length; i++) {
+                System.out.println("ID: " + transfers[i].getTransferId() + " From: " + transfers[i].getFromUserName() + ", To: " + transfers[i].getToUserName() + " Amount: $" + transfers[i].getAmount());
+            }
+            try {
+                Scanner scan = new Scanner(System.in);
+                System.out.println("Please enter transfer ID to view details (0 to cancel):");
+                String transferIdString = scan.nextLine();
+                if (!transferIdString.equals("0")) {
+                    int transferId = Integer.parseInt(transferIdString);
+                   Transfer transfer = restTemplate.exchange(BASE_URL + "transfer/" + transferId, HttpMethod.GET, makeAuthEntity(authUser), Transfer.class).getBody();
 
-            //23          From: Bernice          $ 903.14
+                    System.out.println();
+                    System.out.println("Transfer Details");
+                    System.out.println();
+                    System.out.println("Id: " + transfer.getTransferId());
+                    System.out.println("From: " + transfer.getFromUserName());
+                    System.out.println("To: " + transfer.getToUserName());
+                    System.out.println("Type: " + transfer.getTypeDesc());
+                    System.out.println("Status: " + transfer.getStatusDesc());
+                    System.out.println("Amount: $" + transfer.getAmount());
+                }
+            } catch (RestClientException ex) {
+                System.out.println("Unable to retrieve transfer details!");
+            }
+        } catch (RestClientException e) {
+            System.out.println("Unable to retrieve transfers!");
         }
     }
 
@@ -70,9 +121,9 @@ public class TransferService {
             return entity;
         }
 
-        private HttpEntity makeAuthEntity(String token) {
+            private HttpEntity makeAuthEntity(AuthenticatedUser user) {
             HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(token);
+            headers.setBearerAuth(user.getToken());
             HttpEntity entity = new HttpEntity<>(headers);
             return entity;
         }

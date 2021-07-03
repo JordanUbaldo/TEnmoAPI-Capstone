@@ -1,12 +1,10 @@
 package com.techelevator.tenmo.dao;
 
-import com.techelevator.tenmo.exceptions.AccountNotFoundException;
 import com.techelevator.tenmo.model.Account;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
 
 @Component
 public class JdbcAccountDao implements AccountDao{
@@ -20,29 +18,16 @@ public class JdbcAccountDao implements AccountDao{
     @Override
     public Account getAccount(int userId) {
         Account account = null;
-        String sql = "SELECT * FROM accounts WHERE user_id = ?;";
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
-        if (results.next()) {
-           account = mapRowToAccount(results);
-        } else {
-            throw new AccountNotFoundException();
+        try {
+            String sql = "SELECT * FROM accounts WHERE user_id = ?;";
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
+            if (results.next()) {
+                account = mapRowToAccount(results);
+            }
+        } catch (DataAccessException e) {
+            System.out.println("Unable to access data.");
         }
         return account;
-    }
-
-    @Override
-    public void addToBalance(BigDecimal amountToAdd, int to) {
-        BigDecimal updatedBalance = getAccount(to).getBalance().add(amountToAdd);
-        String sql = "UPDATE accounts SET balance = ? WHERE user_id = ?;";
-        jdbcTemplate.queryForRowSet(sql, updatedBalance, to);
-
-    }
-
-    @Override
-    public void subtractToBalance(BigDecimal amountToSubtract, int from) {
-        BigDecimal updatedBalance = getAccount(from).getBalance().subtract(amountToSubtract);
-        String sql = "UPDATE accounts SET balance = ? WHERE user_id = ?;";
-        jdbcTemplate.queryForRowSet(sql, updatedBalance, from);
     }
 
     private Account mapRowToAccount(SqlRowSet rs) {

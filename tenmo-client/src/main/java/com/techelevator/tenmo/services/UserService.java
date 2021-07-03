@@ -6,6 +6,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
@@ -13,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserService {
-    public static String AUTH_TOKEN = "";
     private final String BASE_URL;
     public RestTemplate restTemplate = new RestTemplate();
 
@@ -21,13 +21,21 @@ public class UserService {
         BASE_URL = url;
     }
 
+
+    //Can remove
     public void getUsers(AuthenticatedUser authUser) {
         User[] users = null;
-        users = restTemplate.exchange(BASE_URL + "/user", HttpMethod.GET,
-                makeAuthEntity(authUser.getToken()), User[].class).getBody();
+        try {
+            users = restTemplate.exchange(BASE_URL + "/user", HttpMethod.GET,
+                    makeAuthEntity(authUser), User[].class).getBody();
 
-        for (int i = 0; i< users.length; i++) {
-            System.out.println(users[i].getId() + "\t" + users[i].getUsername());
+            System.out.println("Users");
+            System.out.println("ID\t\t Name");
+            for (int i = 0; i < users.length; i++) {
+                System.out.println(users[i].getId() + "\t" + users[i].getUsername());
+            }
+        } catch (RestClientException e) {
+            System.out.println("Unable to retrieve Users!");
         }
     }
 
@@ -39,9 +47,9 @@ public class UserService {
         return entity;
     }
 
-    private HttpEntity makeAuthEntity(String token) {
+    private HttpEntity makeAuthEntity(AuthenticatedUser user) {
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
+        headers.setBearerAuth(user.getToken());
         HttpEntity entity = new HttpEntity<>(headers);
         return entity;
     }

@@ -24,7 +24,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	private static final String MAIN_MENU_OPTION_VIEW_PENDING_REQUESTS = "View your pending requests";
 	private static final String MAIN_MENU_OPTION_LOGIN = "Login as different user";
 	private static final String[] MAIN_MENU_OPTIONS = { MAIN_MENU_OPTION_VIEW_BALANCE, MAIN_MENU_OPTION_SEND_BUCKS, MAIN_MENU_OPTION_VIEW_PAST_TRANSFERS, MAIN_MENU_OPTION_REQUEST_BUCKS, MAIN_MENU_OPTION_VIEW_PENDING_REQUESTS, MAIN_MENU_OPTION_LOGIN, MENU_OPTION_EXIT };
-	
+
     private AuthenticatedUser currentUser;
     private ConsoleService console;
     private AuthenticationService authenticationService;
@@ -77,13 +77,11 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	}
 
 	private void viewCurrentBalance() {
-		System.out.println("Current Balance:");
-		System.out.println("$" + accountService.balance(currentUser) + " TEBUCKS");
+    	accountService.balance(currentUser);
 
 	}
 
 	private void viewTransferHistory() {
-		// TODO Auto-generated method stub
 		transferService.getTransfers(currentUser);
 		
 	}
@@ -95,9 +93,7 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 
 	private void sendBucks() {
 		// TODO Auto-generated method stub
-		System.out.println("Users");
-		System.out.println("ID\t\t Name");
-		userService.getUsers(currentUser);
+		//userService.getUsers(currentUser);
 		transferService.transfer(currentUser);
 
 

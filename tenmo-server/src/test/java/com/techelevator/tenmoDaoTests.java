@@ -19,18 +19,18 @@ public class tenmoDaoTests {
     @BeforeClass
     public static void setDataSource() {
         dataSource = new SingleConnectionDataSource();
-        dataSource.setUrl("http://localhost:8080/");
+        dataSource.setUrl("jdbc:postgresql://localhost:5432/tenmo"); // "jdbc:postgresql://localhost:5432/EmployeeProjects"
         dataSource.setUsername("postgres");
         dataSource.setPassword("postgres1");
 
         dataSource.setAutoCommit(false);
     }
 
-    @Before
-    public void loadTestData() throws IOException, SQLException {
-
-        ScriptUtils.executeSqlScript(dataSource.getConnection(), new ClassPathResource("test-data.sql"));
-    }
+//    @Before
+//    public void loadTestData() throws IOException, SQLException {
+//
+//        ScriptUtils.executeSqlScript(dataSource.getConnection(), new ClassPathResource("test-data.sql"));
+//    }
 
     @After
     public void rollback() throws SQLException {

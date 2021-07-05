@@ -7,6 +7,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -31,47 +32,43 @@ public class TransferService {
                 System.out.println("Users");
                 System.out.println("ID\t\t Name");
                 for (int i = 0; i < users.length; i++) {
-                    System.out.println(users[i].getId() + "\t" + users[i].getUsername());
+                    if (!user.getUser().getUsername().equals(users[i].getUsername()))
+                        System.out.println(users[i].getId() + "\t" + users[i].getUsername());
                 }
             } catch (RestClientException e) {
                 System.out.println("Unable to retrieve Users!");
             }
 
-            Scanner scan = new Scanner(System.in);
+           // Messages for bad request are sending through incorrect.
             System.out.println("\nEnter ID of user you are sending to (0 to cancel):");
-            String toString = scan.nextLine();
-            if (toString.equals("0")) {
-                System.out.println("\nTransfer Canceled");
-            } else {
-                int to = 0;
-                try {
-                    to = Integer.parseInt(toString);
-                } catch (NumberFormatException e) {
-                    System.out.println("Error: Invalid Input");
-                }
-                System.out.println("\nEnter amount:");
-                String amountString = scan.nextLine();
-                BigDecimal amount = new BigDecimal(0);
-                try {
-                    amount = new BigDecimal(amountString);
-                } catch (NumberFormatException e) {
-                    System.out.println("Error: Invalid Input");
-                }
-                Transfer transfer = new Transfer();
-                transfer.setAmount(amount);
-                transfer.setToUserId(to);
-                transfer.setFromUserId(user.getUser().getId());
-                transfer.setStatusDesc("Approved");
-                transfer.setTypeDesc("Send");
-                transfer.setStatusId(2);
-                transfer.setTypeId(2);
+            try {
+                Scanner scan = new Scanner(System.in);
+                String toString = scan.nextLine();
+                if (toString.equals("0")) {
+                    System.out.println("\nTransfer Canceled");
+                } else {
+                    int to = Integer.parseInt(toString);
+                    System.out.println("\nEnter amount:");
 
-                try {
+                    String amountString = scan.nextLine();
+                    BigDecimal amount = new BigDecimal(amountString);
+
+                    Transfer transfer = new Transfer();
+                    transfer.setAmount(amount);
+                    transfer.setToUserId(to);
+                    transfer.setFromUserId(user.getUser().getId());
+                    transfer.setStatusDesc("Approved");
+                    transfer.setTypeDesc("Send");
+                    transfer.setStatusId(2);
+                    transfer.setTypeId(2);
+
                     restTemplate.exchange(BASE_URL + "/transfer", HttpMethod.POST,
                             makeTransferEntity(user, transfer), Transfer.class).getBody();
-                } catch (Exception e) {
-                    System.out.println("Invalid User");
                 }
+            } catch (NumberFormatException e) {
+                System.out.println("Error: Invalid Input");
+            } catch  (HttpClientErrorException e) {
+                System.out.println("Error: " + e.getStatusCode() + " : " + e.getStatusText());
             }
         }
 
@@ -84,32 +81,52 @@ public class TransferService {
             System.out.println();
             System.out.println("Transfers:");
             for (int i = 0; i < transfers.length; i++) {
-                System.out.println("ID: " + transfers[i].getTransferId() + " From: " + transfers[i].getFromUserName() + ", To: " + transfers[i].getToUserName() + " Amount: $" + transfers[i].getAmount());
+                if (transfers[i].getFromUserName().equals(authUser.getUser().getUsername())) {
+                    System.out.println("ID: " + transfers[i].getTransferId() + ", To: " + transfers[i].getToUserName() + " Amount: $" + transfers[i].getAmount());
+                } else {
+                    System.out.println("ID: " + transfers[i].getTransferId() + ", From: " + transfers[i].getFromUserName() + " Amount: $" + transfers[i].getAmount());
+                }
             }
+        } catch (RestClientException e) {
+            System.out.println("Unable to retrieve transfers.");
+        }
+
+            System.out.println("Please enter transfer ID to view details (0 to cancel):");
+            Scanner scan = new Scanner(System.in);
             try {
-                Scanner scan = new Scanner(System.in);
-                System.out.println("Please enter transfer ID to view details (0 to cancel):");
                 String transferIdString = scan.nextLine();
                 if (!transferIdString.equals("0")) {
                     int transferId = Integer.parseInt(transferIdString);
                    Transfer transfer = restTemplate.exchange(BASE_URL + "transfer/" + transferId, HttpMethod.GET, makeAuthEntity(authUser), Transfer.class).getBody();
 
-                    System.out.println();
-                    System.out.println("Transfer Details");
-                    System.out.println();
-                    System.out.println("Id: " + transfer.getTransferId());
-                    System.out.println("From: " + transfer.getFromUserName());
-                    System.out.println("To: " + transfer.getToUserName());
-                    System.out.println("Type: " + transfer.getTypeDesc());
-                    System.out.println("Status: " + transfer.getStatusDesc());
-                    System.out.println("Amount: $" + transfer.getAmount());
+                   if (transfer.getTransferId() == 0) {
+                       System.out.println("Error Invalid Transfer");
+                   } else {
+                       System.out.println();
+                       System.out.println("Transfer Details");
+                       System.out.println();
+                       System.out.println("Id: " + transfer.getTransferId());
+                       if (transfer.getFromUserName().equals(authUser.getUser().getUsername())) {
+                           System.out.println("From: Me");
+                       } else {
+                           System.out.println("From: " + transfer.getFromUserName());
+                       }
+                       if (transfer.getToUserName().equals(authUser.getUser().getUsername())) {
+                           System.out.println("To: Me");
+                       } else {
+                           System.out.println("To: " + transfer.getToUserName());
+                       }
+                       System.out.println("Type: " + transfer.getTypeDesc());
+                       System.out.println("Status: " + transfer.getStatusDesc());
+                       System.out.println("Amount: $" + transfer.getAmount());
+                   }
                 }
-            } catch (RestClientException ex) {
-                System.out.println("Unable to retrieve transfer details!");
+            } catch (NumberFormatException e) {
+        System.out.println("Error: Invalid Input");
             }
-        } catch (RestClientException e) {
-            System.out.println("Unable to retrieve transfers!");
-        }
+            catch  (HttpClientErrorException e) {
+        System.out.println("Error: " + e.getStatusCode() + " : " + e.getStatusText());
+    }
     }
 
 
@@ -127,6 +144,5 @@ public class TransferService {
             HttpEntity entity = new HttpEntity<>(headers);
             return entity;
         }
-
     }
 

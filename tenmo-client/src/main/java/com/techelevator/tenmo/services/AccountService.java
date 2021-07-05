@@ -28,9 +28,6 @@ public class AccountService {
         System.out.println("$" + balance + " TEBUCKS");
     }
 
-
-
-
     private HttpEntity makeAuthEntity(AuthenticatedUser user) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(user.getToken());

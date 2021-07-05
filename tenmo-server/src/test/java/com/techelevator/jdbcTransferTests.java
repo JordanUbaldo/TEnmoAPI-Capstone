@@ -1,6 +1,7 @@
 package com.techelevator;
 
 import com.techelevator.tenmo.dao.JdbcTransferDao;
+import com.techelevator.tenmo.exceptions.NsfException;
 import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.Transfer;
 import org.junit.Assert;
@@ -41,14 +42,12 @@ private static final Transfer TRANSFER_1 = new Transfer(2,"Send",2,"Approved",10
 
     }
 
-    @Test
+    @Test(expected = NsfException.class)
     public void test_transfer_NSF() {
         BigDecimal expectedFromBalance = sut.getAccountByUserId(1001).getBalance();
         BigDecimal expectedToBalance = sut.getAccountByUserId(1002).getBalance();
 
-
-        sut.transfer(TRANSFER_2);
-
+            sut.transfer(TRANSFER_2);
 
         BigDecimal actualFromBalance = sut.getAccountByUserId(1001).getBalance();
         BigDecimal actualToBalance = sut.getAccountByUserId(1002).getBalance();
@@ -59,10 +58,10 @@ private static final Transfer TRANSFER_1 = new Transfer(2,"Send",2,"Approved",10
     }
     @Test
     public void get_account_by_accountId() {
-       Account expected =sut.getAccountByAccountId(1001);
+       Account expected =sut.getAccountByAccountId(2001);
 
        int actual = expected.getAccountId();
-       Assert.assertEquals(1001,actual);
+       Assert.assertEquals(2001,actual);
 
 
     }

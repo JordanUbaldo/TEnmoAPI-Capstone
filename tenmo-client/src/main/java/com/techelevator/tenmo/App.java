@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 
 public class App {
 
-private static final String API_BASE_URL = "http://localhost:8080/";
+	private static final String API_BASE_URL = "http://localhost:8080/";
     
     private static final String MENU_OPTION_EXIT = "Exit";
     private static final String LOGIN_MENU_OPTION_REGISTER = "Register";
@@ -49,8 +49,9 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 		System.out.println("*********************");
 		System.out.println("* Welcome to TEnmo! *");
 		System.out.println("*********************");
-		
+
 		registerAndLogin();
+		
 		mainMenu();
 	}
 
@@ -87,22 +88,15 @@ private static final String API_BASE_URL = "http://localhost:8080/";
 	}
 
 	private void viewPendingRequests() {
-		// TODO Auto-generated method stub
 		System.out.println("Sorry not implemented yet!");
 	}
 
 	private void sendBucks() {
-		// TODO Auto-generated method stub
-		//userService.getUsers(currentUser);
 		transferService.transfer(currentUser);
 
-
-
-		
 	}
 
 	private void requestBucks() {
-		// TODO Auto-generated method stub
 		System.out.println("Sorry not implemented yet!");
 		
 	}

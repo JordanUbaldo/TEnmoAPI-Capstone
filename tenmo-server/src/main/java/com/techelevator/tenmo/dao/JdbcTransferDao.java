@@ -1,5 +1,6 @@
 package com.techelevator.tenmo.dao;
 
+import com.techelevator.tenmo.exceptions.NsfException;
 import com.techelevator.tenmo.model.Account;
 import com.techelevator.tenmo.model.Transfer;
 import org.springframework.dao.DataAccessException;
@@ -7,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,16 +16,16 @@ import java.util.List;
 @Component
 public class JdbcTransferDao implements TransferDao {
 
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
-    public JdbcTransferDao(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public JdbcTransferDao(DataSource dataSource) {
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
     @Override
-    public Transfer getTransfer(int id) {
+    public Transfer getTransfer(int id, int userId) {
         Transfer transfer = new Transfer();
-//       try {
+       try {
             String sql = "SELECT t.*, u.username AS from_username, v.username AS to_username, ts.transfer_status_desc, tt.transfer_type_desc " +
                     "FROM transfers t " +
                     "JOIN accounts a ON t.account_from = a.account_id " +
@@ -32,14 +34,14 @@ public class JdbcTransferDao implements TransferDao {
                     "JOIN users v ON b.user_id = v.user_id " +
                     "JOIN transfer_statuses ts ON t.transfer_status_id = ts.transfer_status_id " +
                     "JOIN transfer_types tt ON t.transfer_type_id = tt.transfer_type_id " +
-                    "WHERE t.transfer_id = ?;";
-            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id);
+                    "WHERE t.transfer_id = ? AND (a.user_id = ? OR b.user_id = ?);";
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id, userId, userId);
             if (results.next()) {
                 transfer = mapRowToTransfer(results);
             }
-//       } catch (DataAccessException e) {
-//            System.out.println("Error: Not a valid transfer.");
-//        }
+        } catch (NullPointerException e) {
+            throw e;
+        }
         return transfer;
     }
 
@@ -64,25 +66,29 @@ public class JdbcTransferDao implements TransferDao {
 
             }
         } catch (DataAccessException e) {
-            System.out.println("Unable to access data.");
+            System.out.println("Unable to retrieve list of transfers.");
         }
         return transfers;
     }
 
-    // How to avoid transfer being put into the database, but not being performed?
     @Override
     public void transfer(Transfer transfer) {
-        //try {
-            setTransfer(transfer);
+        try {
             BigDecimal amountToTransfer = transfer.getAmount();
             int fromUser = transfer.getFromUserId();
             int toUser = transfer.getToUserId();
-//        if (accountDao.getAccount(fromUser).getBalance().compareTo(amountToTransfer) > -1) {
-            addToBalance(amountToTransfer, toUser);
-            subtractToBalance(amountToTransfer, fromUser);
-        //} catch (Exception e) {
-//            System.out.println("Unable to perform transfer.");
-//        }
+            if (getAccountByUserId(fromUser).getBalance().compareTo(amountToTransfer) > -1) {
+                addToBalance(amountToTransfer, toUser);
+                subtractFromBalance(amountToTransfer, fromUser);
+                setTransfer(transfer);
+            } else {
+                throw new NsfException();
+            }
+        }  catch (NsfException ex) {
+            throw ex;
+        } catch (NullPointerException e) {
+            throw e;
+        }
     }
 
     public void setTransfer(Transfer transfer) {
@@ -97,16 +103,15 @@ public class JdbcTransferDao implements TransferDao {
     }
 
     public void addToBalance(BigDecimal amountToAdd, int to) {
-        BigDecimal updatedBalance = getAccountByUserId(to).getBalance().add(amountToAdd);
-        String sql = "UPDATE accounts SET balance = ? WHERE user_id = ?;";
-        jdbcTemplate.update(sql, updatedBalance, to);
-
+            BigDecimal updatedBalance = getAccountByUserId(to).getBalance().add(amountToAdd);
+            String sql = "UPDATE accounts SET balance = ? WHERE user_id = ?;";
+            jdbcTemplate.update(sql, updatedBalance, to);
     }
 
-    public void subtractToBalance(BigDecimal amountToSubtract, int from) {
-        BigDecimal updatedBalance = getAccountByUserId(from).getBalance().subtract(amountToSubtract);
-        String sql = "UPDATE accounts SET balance = ? WHERE user_id = ?;";
-        jdbcTemplate.update(sql, updatedBalance, from);
+    public void subtractFromBalance(BigDecimal amountToSubtract, int from) {
+            BigDecimal updatedBalance = getAccountByUserId(from).getBalance().subtract(amountToSubtract);
+            String sql = "UPDATE accounts SET balance = ? WHERE user_id = ?;";
+            jdbcTemplate.update(sql, updatedBalance, from);
     }
 
     @Override
@@ -132,8 +137,8 @@ public class JdbcTransferDao implements TransferDao {
         if (results.next()) {
             account = mapRowToAccount(results);
         }
-        } catch (DataAccessException e) {
-        System.out.println("Unable to access data.");
+        } catch (NullPointerException e) {
+        System.out.println("Error: Unable to retrieve account.");
         }
         return account;
     }

@@ -15,6 +15,22 @@ public class Transfer {
     private String toUserName;
     private String fromUserName;
 
+    public Transfer(int transferId, int typeId, String typeDesc, int statusId, String statusDesc, int toUserId, int fromUserId, BigDecimal amount, String toUserName, String fromUserName) {
+        this.transferId = transferId;
+        this.typeId = typeId;
+        this.typeDesc = typeDesc;
+        this.statusId = statusId;
+        this.statusDesc = statusDesc;
+        this.toUserId = toUserId;
+        this.fromUserId = fromUserId;
+        this.amount = amount;
+        this.toUserName = toUserName;
+        this.fromUserName = fromUserName;
+    }
+
+    public Transfer() {
+    }
+
     public int getTransferId() {
         return transferId;
     }

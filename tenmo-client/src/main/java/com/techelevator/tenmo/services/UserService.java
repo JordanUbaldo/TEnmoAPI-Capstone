@@ -9,10 +9,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
 public class UserService {
     private final String BASE_URL;
     public RestTemplate restTemplate = new RestTemplate();

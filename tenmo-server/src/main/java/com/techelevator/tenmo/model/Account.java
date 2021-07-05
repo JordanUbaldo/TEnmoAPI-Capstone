@@ -8,6 +8,15 @@ public class Account extends Transfer {
     private int userId;
     private BigDecimal balance;
 
+    public Account(int accountId, int userId, BigDecimal balance){
+        this.accountId = accountId;
+        this.userId = userId;
+        this.balance = balance;
+    }
+
+    public Account(){
+    }
+
     public int getAccountId() {
         return accountId;
     }

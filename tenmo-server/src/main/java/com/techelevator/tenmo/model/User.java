@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class User extends Account {
+public class User {
 
    private Long id;
    private String username;
@@ -19,6 +19,11 @@ public class User extends Account {
       this.username = username;
       this.password = password;
       this.activated = true;
+   }
+
+   public User(Long id, String username) {
+      this.id = id;
+      this.username = username;
    }
 
    public Long getId() {

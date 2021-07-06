@@ -30,10 +30,10 @@ public class TransferController {
         this.transferDao = transferDao;
     }
 
-
+// Doesn't have at valid not working for some reason.
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(path = "", method = RequestMethod.POST)
-    public void transfer(@Valid @RequestBody Transfer transfer) {
+    public void transfer(@RequestBody Transfer transfer) {
         try {
             transferDao.transfer(transfer);
         } catch (NsfException e) {

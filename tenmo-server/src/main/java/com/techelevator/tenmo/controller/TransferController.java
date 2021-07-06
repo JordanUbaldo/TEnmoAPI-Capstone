@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.validation.Valid;
 import java.security.Principal;
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class TransferController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(path = "", method = RequestMethod.POST)
-    public void transfer(@RequestBody Transfer transfer) {
+    public void transfer(@Valid @RequestBody Transfer transfer) {
         try {
             transferDao.transfer(transfer);
         } catch (NsfException e) {

@@ -23,6 +23,15 @@ public class jdbcUserDaoTests extends tenmoDaoTests{
     }
 
     @Test
+    public void test_create(){
+        sut.create("abc123", "abc123");
+        User user = sut.findByUsername("abc123");
+         String actual = user.getUsername();
+         String expected = "abc123";
+        Assert.assertEquals(expected,actual);
+    }
+
+    @Test
     public void getUser_returns_username() {
         User user = sut.findByUsername("bob123");
         assertUserMatch(USER_1, user);

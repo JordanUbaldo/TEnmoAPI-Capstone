@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class jdbcTransferTests extends tenmoDaoTests{
 
@@ -27,6 +28,25 @@ private static final Transfer TRANSFER_1 = new Transfer(2,"Send",2,"Approved",10
     }
 
     @Test
+    public void test_get_transfer_by_id() {
+       Transfer transfer = sut.getTransfer(3007, 1001);
+       int actualId = transfer.getTransferId();
+       BigDecimal actualAmount = transfer.getAmount();
+       int expectedId = 3007;
+       BigDecimal expectedAmount = new BigDecimal("100.00");
+       Assert.assertEquals(expectedId,actualId);
+       Assert.assertEquals(expectedAmount,actualAmount);
+    }
+
+    @Test
+    public void test_list() {
+        Account account = sut.getAccountByUserId(1003);
+        List<Transfer> actual = sut.list(account);
+
+        Assert.assertEquals(8,actual.size());
+    }
+
+    @Test
     public void test_transfer_is_accurate() {
         BigDecimal expectedFromBalance = sut.getAccountByUserId(1001).getBalance().subtract(new BigDecimal(1));
         BigDecimal expectedToBalance = sut.getAccountByUserId(1002).getBalance().add(new BigDecimal(1));
@@ -37,8 +57,6 @@ private static final Transfer TRANSFER_1 = new Transfer(2,"Send",2,"Approved",10
         BigDecimal actualFromBalance = sut.getAccountByUserId(1001).getBalance();
         Assert.assertEquals(expectedFromBalance,actualFromBalance);
         Assert.assertEquals(expectedToBalance,actualToBalance);
-
-
 
     }
 

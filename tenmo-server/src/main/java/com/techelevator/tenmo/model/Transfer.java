@@ -1,18 +1,43 @@
 package com.techelevator.tenmo.model;
 
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 
 public class Transfer {
 
     private int transferId;
+
+    @NotEmpty
+    @NotNull
+    @Min(1)
+    @Max(2)
     private int typeId;
+    @NotEmpty
+    @NotNull
     private String typeDesc;
+    @NotEmpty
+    @NotNull
+    @Min(1)
+    @Max(3)
     private int statusId;
+    @NotEmpty
+    @NotNull
     private String statusDesc;
+    @NotEmpty
+    @NotNull
     private int toUserId;
+    @NotEmpty
+    @NotNull
     private int fromUserId;
+    @NotEmpty
+    @NotNull
+    @DecimalMin("0")
     private BigDecimal amount;
+    @NotEmpty
+    @NotNull
     private String toUserName;
+    @NotEmpty
+    @NotNull
     private String fromUserName;
 
     public Transfer(int typeId, String typeDesc, int statusId, String statusDesc, int toUserId, int fromUserId, BigDecimal amount, String toUserName, String fromUserName) {

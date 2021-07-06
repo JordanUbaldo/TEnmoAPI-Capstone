@@ -26,12 +26,6 @@ public class tenmoDaoTests {
         dataSource.setAutoCommit(false);
     }
 
-//    @Before
-//    public void loadTestData() throws IOException, SQLException {
-//
-//        ScriptUtils.executeSqlScript(dataSource.getConnection(), new ClassPathResource("test-data.sql"));
-//    }
-
     @After
     public void rollback() throws SQLException {
         dataSource.getConnection().rollback();

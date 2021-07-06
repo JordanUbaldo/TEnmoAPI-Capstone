@@ -26,8 +26,6 @@ public class Transfer {
     @NotEmpty
     @NotNull
     private int toUserId;
-    @NotEmpty
-    @NotNull
     private int fromUserId;
     @NotEmpty
     @NotNull
